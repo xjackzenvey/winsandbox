@@ -48,7 +48,17 @@ DWORD InjectDll(DWORD pid, LPCSTR dllPath) {
 
     // 分配内存空间用于 DLL 路径
     LPVOID pRemoteMem = VirtualAllocEx(hProcess, NULL, strlen(dllPath) + 1, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
-    WriteProcessMemory(hProcess, pRemoteMem, (LPVOID)dllPath, strlen(dllPath) + 1, NULL);
+    if (pRemoteMem == NULL) {
+        std::cerr << "Failed to allocate memory in target process." << std::endl;
+        CloseHandle(hProcess);
+    HANDLE hThread = CreateRemoteThread(hProcess, NULL, 0, reinterpret_cast<LPTHREAD_START_ROUTINE>(LoadLibraryA), pRemoteMem, 0, NULL);
+    }
+    if (!WriteProcessMemory(hProcess, pRemoteMem, reinterpret_cast<LPCVOID>(dllPath), strlen(dllPath) + 1, NULL)) {
+        std::cerr << "Failed to write DLL path to target process memory." << std::endl;
+        VirtualFreeEx(hProcess, pRemoteMem, 0, MEM_RELEASE);
+        CloseHandle(hProcess);
+        return 1;
+    }
 
     // 获取 LoadLibraryA 函数地址, 将其作为远程线程的入口点
     HANDLE hThread = CreateRemoteThread(hProcess, NULL, 0, (LPTHREAD_START_ROUTINE)LoadLibraryA, pRemoteMem, 0, NULL);

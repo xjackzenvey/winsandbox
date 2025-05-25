@@ -1,6 +1,12 @@
 #include <Windows.h>
 #include "hookbase.hpp"
 
+// 导出函数
+extern "C" __declspec(dllexport) int WINAPI MyMessageBoxW(HWND hwnd, LPCWSTR lpText, LPCWSTR lpCaption, UINT uType);
+extern "C" __declspec(dllexport) int WINAPI MyMessageBoxA(HWND hwnd, LPCSTR lpText, LPCSTR lpCaption, UINT uType);
+extern "C" __declspec(dllexport) BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserved);
+
+
 static int (WINAPI *OriginalMessageBoxW) (HWND, LPCWSTR, LPCWSTR, UINT) = MessageBoxW;
 static int (WINAPI *OriginalMessageBoxA) (HWND, LPCSTR, LPCSTR, UINT) = MessageBoxA;
 
@@ -24,4 +30,5 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserv
         HOOK_remove_local((void**)&OriginalMessageBoxW, (void*)MyMessageBoxW);
         HOOK_remove_local((void**)&OriginalMessageBoxA, (void*)MyMessageBoxA);
     }
+    return TRUE;
 }

@@ -16,6 +16,7 @@ link_libraries(${DETOURS_DIR}/lib.X64/detours.lib)
 # 将 src/hookdlls 里的所有源文件打包为 dll
 set (HOOK_DLLS_DIR ${SRC_DIR}/hookdlls)
 add_library(hook_messagebox SHARED ${HOOK_DLLS_DIR}/hook_messagebox.cpp)
+add_library(hook_filesystem SHARED ${HOOK_DLLS_DIR}/hook_filesystem.cpp)
 
 
 # 测试
@@ -31,11 +32,6 @@ add_test(NAME TEST_detours_remote COMMAND test_destours_remote)
 
 enable_testing()
 
-# 设置为 Release 模式
-set(CMAKE_BUILD_TYPE Release)
-
-# 设置编译选项
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /std:c++17 /O2")
 
 # 设置输出目录
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/release/bin)

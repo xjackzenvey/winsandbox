@@ -1,4 +1,5 @@
 #include "hookbase.hpp"
+#include "detours.h"
 #define _DEBUG
 
 void TEST_NORMAL_launch(){
@@ -25,12 +26,19 @@ void TEST_NORMAL_launch(){
 }
 
 void TEST_HOOK_attach_LAUNCH_remote_MessageBox(){
-    LPCSTR lpApplicationPath = "D:/test.exe";
-    LPCSTR lpDllPath = "D:/project/open-source/WinSandBox/build/Release/hook_messagebox.dll";
+    LPCSTR lpApplicationPath = "D:/project/open-source/WinSandBox/build/Debug/test.exe";
+    LPCSTR lpDllPath = "D:/project/open-source/WinSandBox/build/Debug/hook_messagebox.dll";
     HOOK_attach_LAUNCH_remote(lpApplicationPath, lpDllPath);
 }
 
+void TEST_HOOK_attach_existed_remote_MessageBox(){
+    LPCSTR lpApplicationName = "wall.exe";
+    LPCSTR lpDllPath = "D:/project/open-source/WinSandBox/build/Debug/hook_messagebox.dll";
+    HOOK_attach_EXISTED_remote(lpApplicationName, NULL, lpDllPath);
+}
+
 int main() {
-    TEST_HOOK_attach_LAUNCH_remote_MessageBox();
+    //TEST_HOOK_attach_LAUNCH_remote_MessageBox();
+    TEST_HOOK_attach_existed_remote_MessageBox();
     return 0;
 }

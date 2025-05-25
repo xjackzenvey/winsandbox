@@ -73,6 +73,10 @@ DWORD HOOK_attach_LAUNCH_remote(LPCSTR lpApplicationPath, LPCSTR lpDllPath) {
         return 1;
     }
 
+    DetourFinishHelperProcess(reinterpret_cast<HWND>(pi.hProcess), reinterpret_cast<HINSTANCE>(pi.hThread), NULL, 0);
+    CloseHandle(pi.hProcess);
+    CloseHandle(pi.hThread);
+
     return 0;
 
 }
@@ -92,6 +96,8 @@ DWORD HOOK_attach_EXISTED_remote(LPCSTR lpApplicationName, DWORD PID, LPCSTR dll
     if (ProcessID == NULL) {
         std::cerr << "HOOK_install_EXISTED_remote: cannot find the process." << std::endl;
         return 1;
+    }else {
+        std::cout << "HOOK_install_EXISTED_remote: Process ID is " << ProcessID << std::endl;
     }
 
     if (InjectDll(ProcessID, dllPath) != 0) {
