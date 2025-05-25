@@ -31,7 +31,7 @@ DWORD GetProcessIdByName(LPCSTR processName) {
 }
 
 
-void InjectDll(DWORD pid, LPCSTR dllPath) {
+DWORD InjectDll(DWORD pid, LPCSTR dllPath) {
     /*
         // 注入 DLL 到指定进程
         // param pid [DWORD | unsigned long]: 目标进程 ID
@@ -43,7 +43,7 @@ void InjectDll(DWORD pid, LPCSTR dllPath) {
     HANDLE hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, pid);
     if (hProcess == NULL) {
         std::cerr << "Failed to open process with ID: " << pid << std::endl;
-        return;
+        return -1;
     }
 
     // 分配内存空间用于 DLL 路径
@@ -56,7 +56,7 @@ void InjectDll(DWORD pid, LPCSTR dllPath) {
         std::cerr << "Failed to create remote thread in process with ID: " << pid << std::endl;
         VirtualFreeEx(hProcess, pRemoteMem, 0, MEM_RELEASE);
         CloseHandle(hProcess);
-        return;
+        return -1;
     }
     WaitForSingleObject(hThread, INFINITE);
     VirtualFreeEx(hProcess, pRemoteMem, 0, MEM_RELEASE);
@@ -66,6 +66,8 @@ void InjectDll(DWORD pid, LPCSTR dllPath) {
     #ifdef _DEBUG
         std::cout << "DLL injected successfully into process with ID: " << pid << std::endl;
     #endif
+
+    return 0;
 }
 
 #endif
