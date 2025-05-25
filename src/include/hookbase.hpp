@@ -6,6 +6,7 @@
 #include <Windows.h>
 #include "detours.h"
 #include <iostream>
+#include "common.hpp"
 
 # pragma comment(lib, "detours.lib")
 
@@ -42,6 +43,60 @@ void HOOK_remove_local(void** OriginFunc, void* HookedFunc){
     #ifdef _DEBUG
         std::cout << "Hook removed successfully." << std::endl;
     #endif
+}
+
+DWORD HOOK_attach_LAUNCH_remote(LPCSTR lpApplicationPath, LPCSTR lpDllPath) {
+    // 将钩子安装在还未运行的进程中，并启动进程
+    // param [LPCSTR | const char*] lpApplicationPath 要注入的进程路径
+    // param [LPCSTR | const char*] lpDllPath 带钩子的 dll 路径
+
+    STARTUPINFO si = {sizeof(STARTUPINFO)};
+    PROCESS_INFORMATION pi;
+    DWORD _ATTACH = DetourCreateProcessWithDllA(
+        lpApplicationPath, 
+        NULL,     // 命令行参数
+        NULL, NULL,
+        FALSE, // 不继承句柄
+        CREATE_DEFAULT_ERROR_MODE,
+        NULL,   // 环境变量
+        NULL,   // 工作目录
+        &si, &pi,
+        lpDllPath,
+        NULL       // 回调函数
+    );
+
+    if (_ATTACH != NO_ERROR) {
+        std::cerr << "HOOK_install_LAUNCH_remote -> DetourCreateProcessWithDllA Error." << std::endl;
+        return -1;
+    }
+
+    return 0;
+
+}
+
+
+DWORD HOOK_attach_EXISTED_remote(LPCSTR lpApplicationName, DWORD PID, LPCSTR dllPath) {
+    // 将带有钩子的 dll 注入到已经启动的进程
+    // param [LPCSTR | const char*] lpApplicationName 进程名
+    // param [DWORD | unsigned long] PID 进程ID
+    // param  [LPCSTR | const char*] dllPath dll路径
+    // 如果 PID 为 NULL 才使用进程名查找
+
+    DWORD ProcessID;
+    if (PID != NULL) {ProcessID = PID;}
+    else {ProcessID = GetProcessIdByName(lpApplicationName);}
+
+    if (ProcessID == NULL) {
+        std::cerr << "HOOK_install_EXISTED_remote: cannot find the process." << std::endl;
+        return -1;
+    }
+
+    if (InjectDll(ProcessID, dllPath) != 0) {
+        std::cerr << "HOOK_install_EXISTED_remote: InjectDll Error." << std::endl;
+        return -1;
+    }
+
+    return 0;
 }
 
 # endif // _HOOKBASE_HPP_
