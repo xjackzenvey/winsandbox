@@ -43,7 +43,7 @@ DWORD InjectDll(DWORD pid, LPCSTR dllPath) {
     HANDLE hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, pid);
     if (hProcess == NULL) {
         std::cerr << "Failed to open process with ID: " << pid << std::endl;
-        return -1;
+        return 1;
     }
 
     // 分配内存空间用于 DLL 路径
@@ -56,7 +56,7 @@ DWORD InjectDll(DWORD pid, LPCSTR dllPath) {
         std::cerr << "Failed to create remote thread in process with ID: " << pid << std::endl;
         VirtualFreeEx(hProcess, pRemoteMem, 0, MEM_RELEASE);
         CloseHandle(hProcess);
-        return -1;
+        return 1;
     }
     WaitForSingleObject(hThread, INFINITE);
     VirtualFreeEx(hProcess, pRemoteMem, 0, MEM_RELEASE);

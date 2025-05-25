@@ -50,9 +50,10 @@ DWORD HOOK_attach_LAUNCH_remote(LPCSTR lpApplicationPath, LPCSTR lpDllPath) {
     // param [LPCSTR | const char*] lpApplicationPath 要注入的进程路径
     // param [LPCSTR | const char*] lpDllPath 带钩子的 dll 路径
 
-    STARTUPINFO si = {sizeof(STARTUPINFO)};
+    STARTUPINFO si = {0};
+    si.cb = sizeof(STARTUPINFO);
     PROCESS_INFORMATION pi;
-    DWORD _ATTACH = DetourCreateProcessWithDllA(
+    DWORD _ATTACH = DetourCreateProcessWithDllExA(
         lpApplicationPath, 
         NULL,     // 命令行参数
         NULL, NULL,
@@ -65,9 +66,11 @@ DWORD HOOK_attach_LAUNCH_remote(LPCSTR lpApplicationPath, LPCSTR lpDllPath) {
         NULL       // 回调函数
     );
 
-    if (_ATTACH != NO_ERROR) {
-        std::cerr << "HOOK_install_LAUNCH_remote -> DetourCreateProcessWithDllA Error." << std::endl;
-        return -1;
+
+    if (_ATTACH != TRUE) {
+        DWORD errorCode = GetLastError();
+        std::cerr << "HOOK_install_LAUNCH_remote -> DetourCreateProcessWithDllA Error. Error Code: " << errorCode << std::endl;
+        return 1;
     }
 
     return 0;
@@ -88,12 +91,12 @@ DWORD HOOK_attach_EXISTED_remote(LPCSTR lpApplicationName, DWORD PID, LPCSTR dll
 
     if (ProcessID == NULL) {
         std::cerr << "HOOK_install_EXISTED_remote: cannot find the process." << std::endl;
-        return -1;
+        return 1;
     }
 
     if (InjectDll(ProcessID, dllPath) != 0) {
         std::cerr << "HOOK_install_EXISTED_remote: InjectDll Error." << std::endl;
-        return -1;
+        return 1;
     }
 
     return 0;
